@@ -1,0 +1,42 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# Dependabot for package version updates
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    versioning-strategy: increase-if-necessary
+    schedule:
+      interval: weekly
+      time: "04:00"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    # Heavy ML/runtime packages are reviewed manually because compatibility
+    # testing can vary across CPU, CUDA, and Apple Silicon environments.
+    ignore:
+      # Ruff 0.13+ enables additional rules that are not yet adopted by the
+      # maintained legacy entrypoints. Upgrade it deliberately with lint fixes.
+      - dependency-name: ruff
+        versions:
+          - ">=0.13"
+      - dependency-name: torch
+      - dependency-name: torchvision
+      - dependency-name: opencv-python
+      - dependency-name: numpy
+      - dependency-name: scipy
+      - dependency-name: pandas
+      - dependency-name: pillow
+      - dependency-name: matplotlib
+      - dependency-name: seaborn
+      - dependency-name: ttkbootstrap
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      time: "04:00"
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
