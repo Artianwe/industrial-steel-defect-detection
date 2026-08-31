@@ -1,351 +1,176 @@
-# Steel Surface Defect Detection with YOLOv8
-
-An open source YOLOv8 project for steel surface defect detection, training, validation, inference, and GUI demos.
-
-[English](README.md) | [简体中文](README.zh-CN.md)
-
-![Python](https://img.shields.io/badge/Python-3.10%20recommended-blue?logo=python&logoColor=white)
-![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-purple)
-![GUI](https://img.shields.io/badge/GUI-ttkbootstrap-green)
-![Dataset](https://img.shields.io/badge/Dataset-NEU--DET-orange)
-![License](https://img.shields.io/badge/License-AGPL--3.0-red)
-[![CI](https://github.com/YfengJ/steel-defect-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/YfengJ/steel-defect-detection/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/YfengJ/steel-defect-detection)](https://github.com/YfengJ/steel-defect-detection/releases)
-
----
-
-## Overview
-
-This repository is a learning-oriented steel surface defect detection project
-built on **YOLOv8**. It targets NEU-DET style steel defect datasets and
-provides a practical workflow for model training, validation, image inference,
-video inference, and a desktop GUI demo.
-
-It is designed for students, computer vision beginners, and industrial vision
-learners who want a real, runnable, and maintainable open source project rather
-than an unmaintained collection of scripts.
-
-> Datasets, training outputs, and model weights are not included in this
-> repository. Prepare them locally by following [docs/dataset.md](docs/dataset.md).
-
-![Steel defect detection result](screenshots/predict.png)
-
-## Start Here
-
-```bash
-python -m pip install -r requirements.txt
-python predict.py --model /path/to/trusted-best.pt --source /path/to/image.jpg --device cpu
-```
-
-The rendered result is saved under `runs/detect/`. Bring a trusted local weight
-and an image you are allowed to process; the repository intentionally does not
-bundle either. See the [sample inference guide](docs/sample_inference.md) for
-CPU, Apple Silicon MPS, and NVIDIA CUDA examples.
-
-## Current Status
-
-- Current version: `v0.1.3`.
-- CI runs focused Ruff checks, unit tests, CLI smoke tests, a synthetic CPU
-  training/validation integration test, repository hygiene, and Python
-  compilation on Python 3.10.
-- The same health checks run automatically every Monday and can be started
-  manually from GitHub Actions.
-- Documentation exists for macOS, dataset preparation, model cards,
-  sample inference, troubleshooting, support, security, and the roadmap.
-- Datasets and model weights are not included in the repository; users should
-  prepare them locally.
-- The GUI checks local model, dataset, image, folder, and video paths before
-  launching work.
-- Apple Silicon MPS has been checked with PyTorch 2.5.1, a tensor operation,
-  and one temporary image inference run.
-- Planned v0.2.0 work focuses on reproducible training presets, broader device
-  checks, and clearer experiment outputs.
-- A fresh 50-epoch YOLOv8s/NEU-DET reproduction is recorded transparently in
-  the [experiment log](docs/experiments/yolov8s-neu-det-baseline.md).
-  Historical metrics are not presented as verified because the original
-  checkpoint and result files were lost during a device migration.
-
-## Reproduced Baseline
-
-The v0.1.3 Apple Silicon run trained YOLOv8s for 50 epochs on a local 1,440 / 360
-image split. Independent CPU validation of its local `best.pt` produced:
-
-| Precision | Recall | mAP50 | mAP50-95 | mAP75 |
-| ---: | ---: | ---: | ---: | ---: |
-| 0.719 | 0.721 | 0.7637 | 0.4455 | 0.4530 |
-
-These values describe one public-dataset-style split, not factory performance.
-The `crazing` class was the weakest at 0.1861 mAP50-95. See the
-[experiment log](docs/experiments/yolov8s-neu-det-baseline.md) and
-[model card](docs/experiments/yolov8s-neu-det-v0.1.3-model-card.md) for
-per-class results, environment details, limitations, and the local weight
-checksum. The dataset and weight are not committed or released.
-
-| Class | Precision | Recall | mAP50 | mAP50-95 |
-| --- | ---: | ---: | ---: | ---: |
-| `crazing` | 0.625 | 0.383 | 0.472 | 0.1861 |
-| `inclusion` | 0.716 | 0.767 | 0.816 | 0.4821 |
-| `patches` | 0.741 | 0.891 | 0.904 | 0.6045 |
-| `pitted_surface` | 0.825 | 0.788 | 0.847 | 0.5253 |
-| `rolled-in_scale` | 0.611 | 0.567 | 0.630 | 0.2883 |
-| `scratches` | 0.795 | 0.928 | 0.913 | 0.5864 |
-
-**Reproduction setup:** YOLOv8s, 50 epochs, 640 px input, batch size 16,
-Apple M5 with MPS training, followed by independent CPU validation on 360
-validation images containing 822 labeled defect instances.
-
-## Features
-
-| Feature | Description |
-| --- | --- |
-| Single-image inference | Load one image and visualize detected defect boxes. |
-| Batch inference | Process an image folder and generate summary reports. |
-| Video inference | Run defect detection on video files or camera streams. |
-| Model training | Train YOLOv8 models from the command line or GUI. |
-| Model validation | Evaluate trained weights and inspect mAP metrics. |
-| GUI demo | Use a `ttkbootstrap` desktop interface for common workflows. |
-| Device selection | Choose CPU, Apple Silicon MPS, or NVIDIA CUDA for CLI prediction. |
+# Industrial Steel Surface Defect Detection
 
-## Documentation
+## Project Overview
 
-- [macOS and Apple Silicon guide](docs/macos.md)
-- [Sample inference with local files](docs/sample_inference.md)
-- [Dataset preparation](docs/dataset.md)
-- [Model card template](docs/model_card.md)
-- [YOLOv8s baseline experiment log](docs/experiments/yolov8s-neu-det-baseline.md)
-- [YOLOv8s v0.1.3 model card](docs/experiments/yolov8s-neu-det-v0.1.3-model-card.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Roadmap](ROADMAP.md)
-- [Contributing guide](CONTRIBUTING.md)
-- [Code of conduct](CODE_OF_CONDUCT.md)
-- [Support](SUPPORT.md)
-- [Security policy](SECURITY.md)
+This project develops a semantic segmentation system for detecting and
+localizing surface defects in industrial steel images.
 
-## Screenshots
+The project uses a ResNet-18 encoder with a U-Net-style decoder and
+evaluates a defect-aware image sampling strategy designed to improve
+learning of rare and small defect classes.
 
-### Single-image inference
+## Problem
 
-![Single-image inference](screenshots/predict.png)
+The baseline model achieved a strong overall score but showed severe
+class imbalance behavior: it was highly effective at background
+segmentation while missing most defect pixels, particularly for rare
+classes.
 
-### Batch inference
+The diagnostic evaluation showed:
 
-![Batch inference](screenshots/batch.png)
+-   Baseline defect mean IoU: **0.43107**
+-   Baseline mean IoU: **0.53870**
+-   Class 1 IoU: **0.27414**
+-   Class 2 IoU: **0.35474**
+-   Class 3 IoU: **0.55595**
+-   Class 4 IoU: **0.53944**
 
-### Video inference
+This motivated a targeted sampling experiment rather than changing the
+model architecture.
 
-![Video inference](screenshots/video.png)
+## Method
 
-### Training
+### Preprocessing
 
-![Training](screenshots/train.png)
+-   Images are resized to **256 × 1024**.
+-   Images use bilinear interpolation.
+-   Segmentation masks use nearest-neighbor interpolation.
+-   Images are normalized with ImageNet mean and standard deviation.
+-   RLE annotations are decoded into a five-class mask:
+    -   0: Background
+    -   1--4: Defect classes
 
-### Validation
+### Model
 
-![Validation](screenshots/val.png)
+The segmentation network uses:
 
-## Project Structure
+-   ResNet-18 encoder
+-   U-Net-style decoder
+-   Skip connections
+-   Five output classes
 
-```text
-steel-defect-detection/
-├── ui.py                  # Desktop GUI built with ttkbootstrap
-├── train.py               # YOLOv8 training entrypoint
-├── predict.py             # Image and batch prediction entrypoint
-├── val.py                 # Validation entrypoint
-├── video_predict.py       # Video inference helper
-├── translate.py           # VOC XML to YOLO TXT conversion utility
-├── path_validation.py     # Dependency-light GUI path checks
-├── dataset.yaml           # Dataset configuration
-├── requirements.txt       # Python dependencies
-├── requirements-dev.txt   # Focused lint and test dependencies
-├── docs/                  # Project setup and maintenance docs
-├── .github/               # CI, Dependabot, and issue templates
-├── datasets/              # Local datasets, ignored by git
-├── runs/                  # Local training/inference outputs, ignored by git
-└── weights/ or *.pt        # Local model weights, ignored by git
-```
+### Defect-aware sampling
 
-## Maintained Scope And Upstream
+The final experiment changes the probability with which training images
+are selected.
 
-This repository vendors **Ultralytics 8.0.182** so the original project remains
-reproducible without silently changing its YOLO runtime. The vendored
-`ultralytics/`, much of `docs/`, and generic `examples/` originate from the
-[Ultralytics project](https://github.com/ultralytics/ultralytics) under
-AGPL-3.0.
+Sampling weights emphasize:
 
-Project-specific maintenance focuses on:
+1.  Images containing Class 1 defects
+2.  Images containing Class 2 defects
+3.  Images containing small total defect areas
 
-- `train.py`, `val.py`, `predict.py`, and `video_predict.py`;
-- the `ttkbootstrap` desktop workflow in `ui.py`;
-- dataset conversion and path validation;
-- CPU, CUDA, and Apple Silicon MPS setup and compatibility;
-- focused tests, CI, release documentation, and contributor support.
+Weights are capped to avoid excessive sampling bias.
 
-Changes to the vendored YOLO core are intentionally conservative. A future
-move to a pinned external package is tracked as a compatibility project rather
-than being presented as original model architecture work.
+Importantly, this strategy does **not** duplicate image files. It
+changes image selection probability during training.
 
-## Defect Classes
+## Experiments
 
-The default configuration follows the six common NEU-DET steel surface defect classes:
+### Baseline
 
-| ID | Class | Meaning |
-| --- | --- | --- |
-| 0 | `crazing` | Fine crack-like surface patterns |
-| 1 | `inclusion` | Non-metallic inclusion defects |
-| 2 | `patches` | Irregular surface patches |
-| 3 | `pitted_surface` | Pitting or corrosion-like marks |
-| 4 | `rolled-in_scale` | Oxide scale rolled into the surface |
-| 5 | `scratches` | Linear scratch defects |
+The original model/checkpoint was independently verified on the same
+validation set.
 
-## Quick Start
+**Verified results:**
 
-### 1. Requirements
+  Metric               Baseline
+  ------------------ ----------
+  Mean IoU              0.53870
+  Mean Dice             0.67076
+  Defect Mean IoU       0.43107
+  Defect Mean Dice      0.59236
 
-- Python 3.10 recommended
-- CPU, Apple Silicon MPS, or NVIDIA CUDA
-- Windows, Linux, or macOS
+### Defect-aware sampling
 
-macOS users should start with [docs/macos.md](docs/macos.md).
+The sampling experiment was trained for a maximum of 30 epochs with
+early stopping.
 
-### 2. Install
+Training stopped at epoch 19 after five consecutive epochs without
+improvement.
 
-```bash
-git clone https://github.com/YfengJ/steel-defect-detection.git
-cd steel-defect-detection
+The best checkpoint was epoch 14.
 
-python -m venv venv
+**Final verified results:**
 
-# Windows
-venv\Scripts\activate
+  Metric                     Final
+  ------------------ -------------
+  Mean IoU             **0.56248**
+  Mean Dice            **0.69555**
+  Defect Mean IoU      **0.46076**
+  Defect Mean Dice     **0.62333**
 
-# Linux/macOS
-source venv/bin/activate
+### Per-class final results
 
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
+  Class              IoU      Dice   Precision    Recall
+  ------------ --------- --------- ----------- ---------
+  Background     0.96937   0.98445     0.97796   0.99102
+  Defect 1       0.31089   0.47432     0.56444   0.40902
+  Defect 2       0.40933   0.58089     0.61057   0.55396
+  Defect 3       0.55105   0.71055     0.79577   0.64183
+  Defect 4       0.57175   0.72754     0.86881   0.62578
 
-Prepare these files locally:
+## Baseline vs Final
 
-- Dataset: see [docs/dataset.md](docs/dataset.md)
-- Weights: download a YOLOv8 pretrained weight such as `yolov8n.pt`, or use your own trained `best.pt`
+  Metric               Baseline     Final         Change
+  ------------------ ---------- --------- --------------
+  Mean IoU              0.53870   0.56248       +0.02378
+  Defect Mean IoU       0.43107   0.46076   **+0.02969**
+  Mean Dice             0.67076   0.69555       +0.02479
+  Defect Mean Dice      0.59236   0.62333   **+0.03097**
 
-For a dataset-free first run with your own local image and trusted weight, use
-[docs/sample_inference.md](docs/sample_inference.md).
+The defect mean IoU increased by approximately **6.9% relative to the
+baseline**.
 
-### 3. Launch the GUI
+## Qualitative evaluation
 
-```bash
-python ui.py
-```
+Representative validation examples were evaluated using:
 
-The GUI includes tabs for image prediction, batch prediction, video inference, training, and validation.
+**Original image → Ground truth → Baseline prediction → Final sampling
+prediction**
 
-## Command-line Usage
+The final model demonstrated substantial improvements on difficult/rare
+defects. Representative example-level IoU changes included:
 
-### Train
+-   Class 1: 0.000 → 0.664
+-   Class 1: 0.000 → 0.708
+-   Class 2: 0.000 → 0.462
+-   Class 4: 0.000 → 0.785
+-   Class 3: 0.166 → 0.264
 
-```bash
-# CPU
-python train.py --model yolov8n.pt --data dataset.yaml --epochs 50 --batch 16 --device cpu
+These examples support the quantitative finding that the sampling
+strategy improves defect detection rather than simply optimizing
+background segmentation.
 
-# Apple Silicon MPS
-python train.py --model yolov8n.pt --data dataset.yaml --epochs 50 --batch 8 --device mps
+## Final conclusion
 
-# NVIDIA CUDA
-python train.py --model yolov8n.pt --data dataset.yaml --epochs 50 --batch 16 --device cuda
-```
+The completed project demonstrates a practical approach to severe class
+imbalance in industrial defect segmentation.
 
-### Validate
+Rather than repeatedly changing the network architecture, the project:
 
-```bash
-python val.py --model runs/detect/train_result/weights/best.pt --data dataset.yaml
-```
+1.  established a baseline,
+2.  diagnosed its failure mode,
+3.  introduced a targeted defect-aware sampling strategy,
+4.  trained and independently verified the resulting model,
+5.  compared quantitative metrics, confusion matrices, and qualitative
+    predictions.
 
-### Predict
+The final model improves both overall segmentation and, more
+importantly, defect-focused performance.
 
-```bash
-python predict.py \
-  --model runs/detect/train_result/weights/best.pt \
-  --source path/to/image.jpg \
-  --device cpu
-```
+## Project status
 
-## Dataset Preparation
+**COMPLETE**
 
-This project can use the [NEU Surface Defect Database](http://faculty.neu.edu.cn/songkechen/zh_CN/zdylm/263270/list/)
-or another dataset with the same class mapping.
+The trained checkpoints, verification outputs, and qualitative
+comparison results should be retained as the final project artifacts.
 
-Expected local layout:
+## Suggested portfolio description
 
-```text
-datasets/NEU-DET/
-├── images/
-│   ├── train/
-│   ├── val/
-│   └── test/
-├── labels/
-│   ├── train/
-│   ├── val/
-│   └── test/
-└── annotations/
-```
-
-YOLO label files should use:
-
-```text
-class_id x_center y_center width height
-```
-
-All coordinates must be normalized to `0.0` to `1.0`.
-
-If your annotations are VOC XML files, place them under `datasets/NEU-DET/annotations/` and run:
-
-```bash
-python translate.py
-```
-
-## Model Weights
-
-Model weights are intentionally excluded from git. Keep large artifacts locally,
-in cloud storage, or in GitHub Releases.
-
-Only load weights from sources you trust. PyTorch checkpoints may contain
-serialized Python objects.
-
-Common local choices:
-
-| Weight | Use case |
-| --- | --- |
-| `yolov8n.pt` | Fastest baseline for CPU or small experiments |
-| `yolov8s.pt` | Better speed/accuracy balance |
-| `yolov8m.pt` | Medium experiments when hardware allows |
-| `best.pt` | Your trained defect detector |
-
-## Dependency Updates
-
-Dependabot is enabled for Python dependencies and GitHub Actions. Large
-dependency jumps are reviewed conservatively because PyTorch, OpenCV, NumPy, and
-Ultralytics compatibility can be sensitive across platforms. This repository
-vendors Ultralytics `8.0.182`; PyTorch is capped below `2.6` because newer
-`torch.load` defaults are incompatible with that checkpoint loader. NumPy is
-capped below `2.4` because this vendored runtime still calls `numpy.trapz`.
-
-## Release Notes
-
-See [RELEASE_NOTES.md](RELEASE_NOTES.md) for v0.1.3 changes, known limitations, and next plans.
-
-## Community
-
-Real bug reports, reproduction notes, and focused pull requests are welcome.
-Share a tested environment or result in the
-[reproduction reports discussion](https://github.com/YfengJ/steel-defect-detection/discussions/57).
-If this project helps your study or research, consider starring the repository
-to support continued maintenance. Please do not use star exchanges or other
-artificial promotion.
-
-## License
-
-This project is licensed under the [AGPL-3.0 License](LICENSE).
-
-YOLOv8 is provided by [Ultralytics](https://github.com/ultralytics/ultralytics) and follows its upstream license terms.
+> Developed an industrial steel surface defect segmentation pipeline
+> using a ResNet-18 U-Net architecture. Diagnosed severe class-imbalance
+> and rare-defect under-detection in the baseline model, then designed a
+> defect-aware sampling strategy emphasizing rare and small defects.
+> Independently verified the final model and improved defect mIoU from
+> 0.431 to 0.461 while improving overall mIoU from 0.539 to 0.562.

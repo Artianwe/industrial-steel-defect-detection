@@ -185,3 +185,5 @@ __pycache__/
 
 # VS Code settings
 .vscode/
+# Severstal dataset - do not upload to GitHub
+data/
